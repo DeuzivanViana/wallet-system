@@ -1,12 +1,14 @@
-import { redirect } from 'next/navigation';
+import { ArrowRight, SendHorizonal } from 'lucide-react';
 import { Layout } from './components/Layout'
+import { NavigationBar } from './components/NavigationBar';
 import { createClient } from './utils/supabase/server';
-import { signOut } from './actions';
 
 export default async function Page() {
   const supabase = await createClient()
 
-  const { data: wallet} = await supabase.from('wallet').select('*').maybeSingle()
+  const { data: { user }} = await supabase.auth.getUser()
+  const { data: wallet} = await supabase.from('wallet').select('*').eq('user_id', user.id).maybeSingle()
+  const { data: transaction } = await supabase.from('transaction').select('*').eq('from_id', wallet.id).order('created_at', {ascending: false}).limit(21)
 
   return (
     <Layout>
@@ -14,6 +16,17 @@ export default async function Page() {
         <h1 className='text-3xl'>DTP { wallet?.balance }</h1>
         <footer className='text-zinc-500 text-xs'>wallet-id: { wallet?.id }</footer>
       </section>
+
+      <h2 className='p-4 text-zinc-700 underi'>Last transactions</h2>
+      { transaction.map((val, index) => {
+        return <div key={index} className={'flex items-center gap-2 p-4 border-zinc-700 border-b ' + (index === 0 ? 'border-t' : '')}>
+          <ArrowRight size={18} className='text-zinc-500'/>
+          <span className='text-lime-500 text-xs'>{ val.amount } DTP to </span>
+          <span className='text-zinc-500 text-xs'>{ val.to_id }</span>
+        </div>
+      })}
+
+      <NavigationBar/>
     </Layout>
   );
 }

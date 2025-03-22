@@ -21,6 +21,8 @@ export default async function Page() {
 
         <button onClick={signOut} className='p-2 text-xs mt-[100px] bg-red-500 rounded-md text-zinc-50 w-1/4 self-end'>Sign-out</button>
       </section>
+
+      <NavigationBar/>
     </Layout>
   );
 }

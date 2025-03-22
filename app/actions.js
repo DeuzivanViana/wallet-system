@@ -27,6 +27,30 @@ export const signOut = async () => {
   redirect('/sign-in')
 }
 
+export const sendTo = async (formData) => {
+  const supabase = await createClient()
+  const amount_to_pay = Number.parseInt(formData.get('amount'))
+
+  const { data: { user }} = await supabase.auth.getUser()
+  const { data: from_wallet } = await supabase.from('wallet').select('*').eq('user_id', user.id).maybeSingle()
+  const { data: to_wallet } = await supabase.from('wallet').select('*').eq('id', formData.get('wallet_id')).maybeSingle()
+  const debit = from_wallet.balance - amount_to_pay
+
+  if(debit >= 0) {
+    await supabase.from('wallet').update({balance: debit}).eq('id', from_wallet.id)
+    await supabase.from('wallet').update({balance: to_wallet.balance + amount_to_pay}).eq('id', to_wallet.id)
+
+    await supabase.from('transaction').insert({
+      from_id: from_wallet.id,
+      to_id: to_wallet.id,
+      amount: amount_to_pay
+    })
+
+    return { success: true }
+  } 
+  return { success: false }
+}
+
 export const signUp = async (formData) => {
   const supabase = await createClient()
  
@@ -49,3 +73,4 @@ export const signUp = async (formData) => {
 
   }
 }
+
