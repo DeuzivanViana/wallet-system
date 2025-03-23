@@ -36,7 +36,7 @@ export const sendTo = async (formData) => {
   const { data: to_wallet } = await supabase.from('wallet').select('*').eq('id', formData.get('wallet_id')).maybeSingle()
   const debit = from_wallet.balance - amount_to_pay
 
-  if(debit >= 0) {
+  if(debit >= 0 && !(from_wallet.id === to_wallet.id)) {
     await supabase.from('wallet').update({balance: debit}).eq('id', from_wallet.id)
     await supabase.from('wallet').update({balance: to_wallet.balance + amount_to_pay}).eq('id', to_wallet.id)
 
