@@ -40,7 +40,11 @@ export const sendTo = async (formData) => {
     redirect('/error?message=This wallet is not valid.')
   }
 
-  if(debit >= 0 && !(from_wallet.id === to_wallet.id)) {
+  if(from_wallet.id === to_wallet.id) {
+    redirect('/error?message=You can\'t send to yourself.')
+  }
+
+  if(debit >= 0) {
     await supabase.from('wallet').update({balance: debit}).eq('id', from_wallet.id)
     await supabase.from('wallet').update({balance: to_wallet.balance + amount_to_pay}).eq('id', to_wallet.id)
 
