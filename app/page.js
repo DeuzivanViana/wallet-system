@@ -29,7 +29,7 @@ export default async function Page() {
       { recived_transaction.map((val, index) => {
         return <div key={index} className={'flex items-center gap-2 p-4 border-zinc-700 border-b ' + (index === 0 ? 'border-t' : '')}>
           <ArrowLeft size={18} className='text-zinc-500'/>
-          <span className='text-lime-500 text-xs'>{ val.amount } DTP to </span>
+          <span className='text-lime-500 text-xs'>{ val.amount } DTP from </span>
           <span className='text-zinc-500 text-xs'>{ val.to_id }</span>
         </div>
       })}
