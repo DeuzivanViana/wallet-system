@@ -33,8 +33,12 @@ export const sendTo = async (formData) => {
 
   const { data: { user }} = await supabase.auth.getUser()
   const { data: from_wallet } = await supabase.from('wallet').select('*').eq('user_id', user.id).maybeSingle()
-  const { data: to_wallet } = await supabase.from('wallet').select('*').eq('id', formData.get('wallet_id')).maybeSingle()
+  const { data: to_wallet } = await supabase.from('wallet').select('*').eq('id', formData.get('walletId')).maybeSingle()
   const debit = from_wallet.balance - amount_to_pay
+
+  if(!to_wallet) {
+    redirect('/error?message=This wallet is not valid.')
+  }
 
   if(debit >= 0 && !(from_wallet.id === to_wallet.id)) {
     await supabase.from('wallet').update({balance: debit}).eq('id', from_wallet.id)
@@ -45,10 +49,9 @@ export const sendTo = async (formData) => {
       to_id: to_wallet.id,
       amount: amount_to_pay
     })
-
-    return { success: true }
-  } 
-  return { success: false }
+  } else {
+    redirect('/error?message=You don\'t have enough balance to this transaction.')
+  }
 }
 
 export const signUp = async (formData) => {

@@ -2,18 +2,13 @@ import { ArrowLeft, ArrowRight, SendHorizonal } from 'lucide-react';
 import { Layout } from './components/Layout'
 import { NavigationBar } from './components/NavigationBar';
 import { createClient } from './utils/supabase/server';
+import { TransactionsList } from './components/TransactionsList';
 
 export default async function Page() {
   const supabase = await createClient()
 
   const { data: { user }} = await supabase.auth.getUser()
   const { data: wallet} = await supabase.from('wallet').select('*').eq('user_id', user.id).maybeSingle()
-  const { data: transaction } = await supabase
-    .from('transaction')
-    .select('*')
-    .or(`from_id.eq.${wallet.id},to_id.eq.${wallet.id}`)
-    .order('created_at', { ascending: false })
-    .limit(21)
 
   return (
     <Layout>
@@ -23,19 +18,7 @@ export default async function Page() {
       </section>
 
       <h2 className='p-4 text-zinc-700 underi'>Last transactions</h2>
-      { transaction.map((val, index) => {
-        return <div key={index} className={'flex items-center gap-2 p-4 border-zinc-700 border-b ' + (index === 0 ? 'border-t' : '')}>
-          { val.to_id === wallet.id ?
-            <ArrowRight size={18} className='text-zinc-500'/> :
-            <ArrowLeft size={18} className='text-zinc-500'/>
-          }
-          { val.to_id === wallet.id ? 
-            <span className='text-red-500 text-xs'>{ val.amount } DTP to </span> :
-            <span className='text-green-500 text-xs'>{ val.amount } DTP from </span> 
-          }
-          <span className='text-zinc-500 text-xs'>{ val.to_id }</span>
-        </div>
-      })}
+      <TransactionsList/>
       
       <NavigationBar/>
     </Layout>
